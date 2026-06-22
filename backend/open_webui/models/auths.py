@@ -156,7 +156,7 @@ class AuthsTable:
             if not credential or not credential.active:
                 verify_password(PLACEHOLDER_HASH)
                 return
-            if not verify_password(credential.password):
+            if not await verify_password(credential.password):
                 return
             return resolved
 
