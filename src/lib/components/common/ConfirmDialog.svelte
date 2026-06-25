@@ -24,6 +24,8 @@
 	export let inputPlaceholder = '';
 	export let inputValue = '';
 	export let inputType = '';
+	export let inputOptions: ({ label?: string; value: string } | string)[] = [];
+	export let inputRequired = false;
 
 	let _inputValue = inputValue;
 
@@ -147,6 +149,41 @@
 										required={true}
 									/>
 								</div>
+							{:else if inputType === 'select' && inputOptions.length}
+								{#if inputOptions.length <= 10}
+									<div class="flex flex-wrap gap-2 mt-3">
+										{#each inputOptions as option}
+											{@const value = typeof option === 'object' && option !== null ? option.value : option}
+											{@const label = typeof option === 'object' && option !== null ? (option.label ?? option.value) : option}
+											<button
+												type="button"
+												class="px-3 py-1.5 text-sm rounded-full transition-colors duration-150 {_inputValue === value
+													? 'bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900'
+													: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}"
+												on:click={() => (_inputValue = value)}
+											>
+												{label}
+											</button>
+										{/each}
+									</div>
+								{:else}
+									<select
+										class="w-full mt-2 rounded-lg px-4 py-2 text-sm dark:text-gray-300 dark:bg-gray-900 outline-hidden"
+										bind:value={_inputValue}
+										required
+									>
+										<option value="" disabled
+											>{inputPlaceholder ? inputPlaceholder : $i18n.t('Select an option')}</option
+										>
+										{#each inputOptions as option}
+											{#if typeof option === 'object' && option !== null}
+												<option value={option.value}>{option.label ?? option.value}</option>
+											{:else}
+												<option value={option}>{option}</option>
+											{/if}
+										{/each}
+									</select>
+								{/if}
 							{:else}
 								<textarea
 									bind:value={_inputValue}
@@ -172,10 +209,13 @@
 						{cancelLabel}
 					</button>
 					<button
-						class="text-sm bg-gray-900 hover:bg-gray-850 text-gray-100 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800 font-medium w-full py-2 rounded-3xl transition"
+						class="text-sm font-medium w-full py-2 rounded-3xl transition {inputRequired && !_inputValue
+							? 'bg-gray-100 dark:bg-gray-850 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+							: 'bg-gray-900 hover:bg-gray-850 text-gray-100 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-800'}"
 						on:click={() => {
 							confirmHandler();
 						}}
+						disabled={inputRequired && !_inputValue}
 						type="button"
 					>
 						{confirmLabel}

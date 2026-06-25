@@ -139,6 +139,8 @@
 	let eventConfirmationInputPlaceholder = '';
 	let eventConfirmationInputValue = '';
 	let eventConfirmationInputType = '';
+	let eventConfirmationInputOptions: ({ label?: string; value: string } | string)[] = [];
+	let eventConfirmationInputRequired = false;
 	let eventCallback = null;
 
 	let selectedModels = [''];
@@ -687,14 +689,15 @@
 				} else if (type === 'input') {
 					eventCallback = cb;
 
-					eventConfirmationInput = true;
-					showEventConfirmation = true;
-
 					eventConfirmationTitle = data.title;
 					eventConfirmationMessage = data.message;
 					eventConfirmationInputPlaceholder = data.placeholder;
 					eventConfirmationInputValue = data?.value ?? '';
 					eventConfirmationInputType = data?.type ?? '';
+					eventConfirmationInputOptions = data?.options ?? [];
+					eventConfirmationInputRequired = data?.required ?? false;
+					eventConfirmationInput = true;
+					showEventConfirmation = true;
 				} else if (type.startsWith('terminal:')) {
 					terminalEventHandler(type, data);
 				} else {
@@ -3029,6 +3032,8 @@
 	inputPlaceholder={eventConfirmationInputPlaceholder}
 	inputValue={eventConfirmationInputValue}
 	inputType={eventConfirmationInputType}
+	inputOptions={eventConfirmationInputOptions}
+	inputRequired={eventConfirmationInputRequired}
 	on:confirm={(e) => {
 		if (e.detail) {
 			eventCallback(e.detail);
