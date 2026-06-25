@@ -235,22 +235,8 @@ If you are running Open WebUI in an offline environment, you can set the `HF_HUB
 export HF_HUB_OFFLINE=1
 ```
 
-## What's Next? 🌟
 
-Discover upcoming features on our roadmap in the [Open WebUI Documentation](https://docs.openwebui.com/roadmap/).
 
-## License 📜
-
-This project contains code under multiple licenses. The current codebase includes components licensed under the Open WebUI License with an additional requirement to preserve the "Open WebUI" branding, as well as prior contributions under their respective original licenses. For a detailed record of license changes and the applicable terms for each section of the code, please refer to [LICENSE_HISTORY](./LICENSE_HISTORY). For complete and updated licensing details, please see the [LICENSE](./LICENSE) and [LICENSE_HISTORY](./LICENSE_HISTORY) files.
-
-## Support 💬
-
-If you have any questions, suggestions, or need assistance, please open an issue or join our
-[Open WebUI Discord community](https://discord.gg/5rJgQTnV4s) to connect with us! 🤝
-
-## Security 🛡️
-
-If you believe you've found a security vulnerability, or something that shouldn't be disclosed publicly, please [reach out confidentially through our responsible disclosure program on GitHub](https://github.com/open-webui/open-webui/security). We accept reports only through GitHub, not through any other platform. Thank you for helping us keep Open WebUI secure!
 
 ## Star History
 
@@ -264,4 +250,4 @@ If you believe you've found a security vulnerability, or something that shouldn'
 
 ---
 
-Created by [Timothy Jaeryang Baek](https://github.com/tjbck) - Let's make Open WebUI even more amazing together! 💪
+
