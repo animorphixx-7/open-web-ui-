@@ -1156,7 +1156,12 @@ export const getChatAccessGrants = async (token: string, id: string) => {
 	return res;
 };
 
-export const updateChatById = async (token: string, id: string, chat: object) => {
+export const updateChatById = async (
+	token: string,
+	id: string,
+	chat: object,
+	deletedMessageIds: string[] = []
+) => {
 	let error = null;
 
 	const res = await fetch(`${WEBUI_API_BASE_URL}/chats/${id}`, {
@@ -1167,7 +1172,9 @@ export const updateChatById = async (token: string, id: string, chat: object) =>
 			...(token && { authorization: `Bearer ${token}` })
 		},
 		body: JSON.stringify({
-			chat: chat
+			chat: chat,
+			// Only sent when the client explicitly deleted messages; absent => upsert-only (no pruning).
+			...(deletedMessageIds.length > 0 && { deleted_message_ids: deletedMessageIds })
 		})
 	})
 		.then(async (res) => {

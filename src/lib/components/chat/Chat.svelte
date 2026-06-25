@@ -444,7 +444,7 @@
 		}
 	};
 
-	const showMessage = async (message, scroll = true) => {
+	const showMessage = async (message, scroll = true, save = true) => {
 		const _chatId = JSON.parse(JSON.stringify($chatId));
 		let _messageId = JSON.parse(JSON.stringify(message.id));
 
@@ -477,7 +477,10 @@
 		await tick();
 		await tick();
 
-		saveChatHandler(_chatId, history);
+		// Callers that persist separately (e.g. deleteMessage's save that carries the deleted IDs) pass save=false.
+		if (save) {
+			saveChatHandler(_chatId, history);
+		}
 	};
 
 	const updateLastReadAt = (id) => {
