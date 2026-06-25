@@ -4123,7 +4123,6 @@ async def streaming_chat_response_handler(response, ctx):
 
                                     processed_data = {
                                         'output': full_output(),
-                                        'content': serialize_output(full_output()),
                                     }
 
                                     # print(data)
@@ -4289,7 +4288,7 @@ async def streaming_chat_response_handler(response, ctx):
                                                 {
                                                     'type': 'chat:completion',
                                                     'data': {
-                                                        'content': serialize_output(full_output() + pending_fc_items),
+                                                        'output': full_output() + pending_fc_items,
                                                     },
                                                 }
                                             )
@@ -4348,7 +4347,7 @@ async def streaming_chat_response_handler(response, ctx):
                                                 }
                                             ]
 
-                                        data = {'content': serialize_output(full_output())}
+                                        data = {'output': full_output()}
 
                                     if value:
                                         if (
@@ -4507,7 +4506,7 @@ async def streaming_chat_response_handler(response, ctx):
                                             )
                                         else:
                                             data = {
-                                                'content': serialize_output(full_output()),
+                                                'output': full_output(),
                                             }
 
                                 if delta:
