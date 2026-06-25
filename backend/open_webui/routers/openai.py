@@ -5,7 +5,6 @@ import hashlib
 import json
 import logging
 import re
-from typing import Optional
 from urllib.parse import quote, urlparse
 
 import aiohttp
@@ -33,7 +32,6 @@ from open_webui.env import (
     FORWARD_SESSION_INFO_HEADER_CHAT_ID,
     MODELS_CACHE_TTL,
 )
-from open_webui.internal.db import get_async_session
 from open_webui.models.access_grants import AccessGrants
 from open_webui.models.config import Config
 from open_webui.models.groups import Groups
@@ -42,7 +40,7 @@ from open_webui.models.users import UserModel
 from open_webui.utils.access_control import check_model_access, has_connection_access, has_permission
 from open_webui.utils.anthropic import get_anthropic_models, is_anthropic_url
 from open_webui.utils.auth import get_admin_user, get_verified_user
-from open_webui.utils.headers import get_custom_headers, include_user_info_headers
+from open_webui.utils.headers import get_custom_headers, include_client_headers, include_user_info_headers
 from open_webui.utils.misc import (
     convert_logit_bias_input_to_json,
     stream_chunks_handler,
@@ -57,7 +55,6 @@ from open_webui.utils.session_pool import (
     stream_wrapper,
 )
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy.ext.asyncio import AsyncSession
 
 log = logging.getLogger(__name__)
 
@@ -103,6 +100,8 @@ async def send_get_request(
                 if ENABLE_FORWARD_USER_INFO_HEADERS and user:
                     headers = include_user_info_headers(headers, user)
 
+                headers = include_client_headers(headers, request)
+
             async with session.get(
                 url,
                 headers=headers,
@@ -124,7 +123,7 @@ async def get_models_request(
     config=None,
 ):
     if is_anthropic_url(url):
-        return await get_anthropic_models(url, key, user=user)
+        return await get_anthropic_models(url, key, user=user, request=request)
     return await send_get_request(request, f'{url}/models', key, user=user, config=config)
 
 
@@ -207,6 +206,10 @@ async def get_headers_and_cookies(
 
     if token:
         headers['Authorization'] = f'Bearer {token}'
+
+    # Forwarded client headers are applied before configured custom headers.
+    # Explicit custom headers therefore have precedence over forwarded values.
+    headers = include_client_headers(headers, request)
 
     if config.get('headers') and isinstance(config.get('headers'), dict):
         custom_headers = get_custom_headers(config.get('headers'), user, metadata)
@@ -627,7 +630,7 @@ async def get_models(request: Request, url_idx: int | None = None, user=Depends(
                         'object': 'list',
                     }
                 elif is_anthropic_url(url):
-                    models = await get_anthropic_models(url, key, user=user)
+                    models = await get_anthropic_models(url, key, user=user, request=request)
                     if models is None:
                         raise Exception('Failed to connect to Anthropic API')
                 else:
@@ -742,7 +745,7 @@ async def verify_connection(
 
                     return response_data
             elif is_anthropic_url(url):
-                result = await get_anthropic_models(url, key)
+                result = await get_anthropic_models(url, key, request=request)
                 if result is None:
                     raise HTTPException(status_code=500, detail=ERROR_MESSAGES.SERVER_CONNECTION_ERROR)
                 if 'error' in result:
