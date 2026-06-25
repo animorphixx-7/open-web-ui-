@@ -51,32 +51,12 @@
 		}
 	}
 
-	function formatJSONString(str: string) {
-		try {
-			const parsed = parseJSONString(str);
-			if (typeof parsed === 'object') {
-				return JSON.stringify(parsed, null, 2);
-			} else {
-				return String(parsed);
-			}
-		} catch (e) {
-			return str;
-		}
-	}
-
-	function parseArguments(str: string): Record<string, unknown> | null {
-		try {
-			const parsed = parseJSONString(str);
-			if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-				return parsed as Record<string, unknown>;
-			}
-			return null;
-		} catch {
-			return null;
-		}
-	}
-
-	$: args = decode(attributes?.arguments ?? '');
+	// Only decode the (potentially huge, per-frame-growing) arguments when they can
+	// actually be shown: when the panel is expanded, or when embeds need them. This
+	// avoids an O(n) decode on every streamed frame for a collapsed in-progress tool
+	// call — the args are never rendered while collapsed without embeds.
+	$: args =
+		open || (Array.isArray(embeds) && embeds.length > 0) ? decode(attributes?.arguments ?? '') : '';
 	export let resultContent: string = '';
 
 	$: result = resultContent || decode(attributes?.result ?? '');
@@ -85,7 +65,18 @@
 	$: isDone = attributes?.done === 'true';
 	$: isExecuting = attributes?.done && attributes?.done !== 'true';
 
-	$: parsedArgs = parseArguments(args);
+	// Parse args once, then derive both the structured key/value view and the raw
+	// pretty-printed fallback from that single result (previously parsed twice — once
+	// via parseArguments and again via formatJSONString in the template).
+	$: parsedArgsRaw = parseJSONString(args);
+	$: parsedArgs =
+		typeof parsedArgsRaw === 'object' && parsedArgsRaw !== null && !Array.isArray(parsedArgsRaw)
+			? (parsedArgsRaw as Record<string, unknown>)
+			: null;
+	$: argsDisplay =
+		typeof parsedArgsRaw === 'object'
+			? JSON.stringify(parsedArgsRaw, null, 2)
+			: String(parsedArgsRaw);
 	$: parsedResult = parseJSONString(result);
 </script>
 
@@ -201,9 +192,7 @@
 							{:else}
 								<div class="tool-call-body w-full max-w-none!">
 									<pre
-										class="text-xs text-gray-600 dark:text-gray-300 whitespace-pre font-mono bg-gray-50 dark:bg-gray-900 rounded-lg p-2.5 overflow-x-auto">{formatJSONString(
-											args
-										)}</pre>
+										class="text-xs text-gray-600 dark:text-gray-300 whitespace-pre font-mono bg-gray-50 dark:bg-gray-900 rounded-lg p-2.5 overflow-x-auto">{argsDisplay}</pre>
 								</div>
 							{/if}
 						</div>
